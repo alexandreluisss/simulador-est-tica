@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador de Estática - Escola Cidadã Integral</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 5px solid #e74c3c;
+        }
+
+        .brasao-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+            gap: 10px;
+        }
+
+        .brasao-image {
+            width: 140px;
+            height: 140px;
+            border: 5px solid white;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 5px;
+        }
+
+        .brasao-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 15px;
+        }
+
+        .school-info {
+            text-align: center;
+        }
+
+        .school-name {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #f39c12;
+        }
+
+        .school-details {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 400;
+            line-height: 1.4;
+            color: #ecf0f1;
+        }
+
+        .title-section {
+            margin-top: 15px;
+        }
+
+        .title-section h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .title-section .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 0;
+        }
+
+        .simulation-area {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 3px dashed #dee2e6;
+        }
+
+        .canvas-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        #simulationCanvas {
+            width: 100%;
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #e8f4f8 0%, #d1ecf1 100%);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #3498db;
+        }
+
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group h3::before {
+            content: "⚙️";
+            font-size: 1.2em;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+        }
+
+        .info-panel {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .info-panel h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+        }
+
+        .info-panel h3::before {
+            content: "📊";
+            font-size: 1.2em;
+        }
+
+        #systemInfo {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        #equilibriumInfo {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .concepts {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .concepts h3 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+        }
+
+        .concepts h3::before {
+            content: "🎓";
+            font-size: 1.2em;
+        }
+
+        .concepts ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .concepts li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .concepts li::before {
+            content: "►";
+            color: #3498db;
+            font-size: 0.8em;
+        }
+
+        .concepts li:last-child {
+            border-bottom: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-equilibrium {
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .status-disequilibrium {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-top: 3px solid #3498db;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .brasao-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .school-name {
+                font-size: 1.8em;
+            }
+            
+            .title-section h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="brasao-container">
+                <div class="brasao-image">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAORdEVYdFhNTABtAHIAYQAgAGYAaQBsAGUAIAB0AHkAcABlACAAdwBlAGIAcABlAGQAZQBzAGkAZwBuACAALQAgAHMAdABhAHQAaQBjAC8AaQBtAGEAZwBlAC8AcABuAGcAeABZRlcAAAAgdEVYdGRhdGU6Y3JlYXRlADIwMjQtMTItMTFUMTA6Mzc6MDkrMDA6MDBNw9JxAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI0LTEyLTExVDEwOjM3OjA5KzAwOjAwBqo+QQAAABl0RVh0U29mdHdhcmUAZ3JhcGhpY3MuaW5rc2NhcGUub3Jnm+48GgAAAABJRU5ErkJggg==" alt="Brasão Escola Cidadã Integral">
+                </div>
+                <div class="school-info">
+                    <div class="school-name">ESCOLA CIDADÃ INTEGRAL</div>
+                    <div class="school-details">
+                        Cassiano Ribeiro Coutinho<br>
+                        Sandá-PB
+                    </div>
+                </div>
+            </div>
+            
+            <div class="title-section">
+                <h1>🏗️ LABORATÓRIO DE ESTÁTICA</h1>
+                <div class="subtitle">Simulador Interativo - Barra de 1 metro</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="simulation-area">
+                <div class="canvas-container">
+                    <canvas id="simulationCanvas" width="700" height="400"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <h3>Forças e Massas</h3>
+                        <button class="btn btn-primary" onclick="addForcaPeso()">
+                            ⚡ Adicionar Força Peso
+                        </button>
+                        <button class="btn btn-success" onclick="addMassa()">
+                            ⚖️ Adicionar Massa
+                        </button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Apoios e Estrutura</h3>
+                        <button class="btn btn-info" onclick="addSupport()">
+                            🪑 Adicionar Apoio
+                        </button>
+                        <button class="btn btn-warning" onclick="rebalanceBar()">
+                            🔄 Reequilibrar
+                        </button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Controles Gerais</h3>
+                        <button class="btn btn-danger" onclick="resetSystem()">
+                            🗑️ Reiniciar Sistema
+                        </button>
+                        <button class="btn btn-success" onclick="calcularMomentos()">
+                            📐 Calcular Momentos
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="info-panel">
+                    <h3>Status do Sistema</h3>
+                    <div id="systemInfo">
+                        <span class="status-indicator status-disequilibrium"></span>
+                        Sistema aguardando configuração...
+                    </div>
+                    <div id="equilibriumInfo">
+                        Adicione um apoio e forças para análise
+                    </div>
+                </div>
+
+                <div class="concepts">
+                    <h3>Conceitos Físicos</h3>
+                    <ul>
+                        <li><strong>ΣF = 0</strong> - Equilíbrio Translacional</li>
+                        <li><strong>ΣM = 0</strong> - Equilíbrio Rotacional</li>
+                        <li><strong>Momento = Força × Braço</strong></li>
+                        <li><strong>Centro de Massa</strong> - Ponto de equilíbrio</li>
+                        <li><strong>Reações de Apoio</strong> - Forças de suporte</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🧪 Laboratório de Física - Escola Cidadã Integral | 📧 Contato: escola@exemplo.com</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do canvas
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // CONSTANTES - BARRA DE 1 METRO
+        const GRAVIDADE = 10; // m/s²
+        const COMPRIMENTO_BARRA = 1; // METROS
+        const COMPRIMENTO_PIXELS = 600; // pixels na tela
+        
+        // Sistema físico - BARRA DE 1 METRO
+        let system = {
+            bar: {
+                length: COMPRIMENTO_PIXELS,  // 1 metro em pixels
+                height: 20,
+                mass: 10,     // 10kg × 10m/s² = 100N
+                color: '#2c3e50',
+                comprimentoReal: COMPRIMENTO_BARRA // 1 metro
+            },
+            forcasPeso: [],   // Forças peso (N)
+            supports: [],
+            masses: []        // Massas (kg) - convertidas para força peso
+        };
+
+        // Variáveis de controle
+        let selectedForce = null;
+        let isDragging = false;
+        let barAngle = 0;
+        let barPivotPoint = 0.5;
+
+        // Classe Força Peso
+        class ForcaPeso {
+            constructor(x, magnitude) {
+                this.id = system.forcasPeso.length;
+                this.position = x;
+                this.magnitude = magnitude; // EM NEWTONS
+                this.angle = 270; // SEMPRE 270° (PARA BAIXO)
+                this.color = this.getColor();
+            }
+            
+            getColor() {
+                const colors = ['#FF4444', '#44FF44', '#4444FF', '#FFFF44', '#FF44FF'];
+                return colors[this.id % colors.length];
+            }
+        }
+
+        // Classe Apoio
+        class Support {
+            constructor(x, type) {
+                this.position = x;
+                this.type = type;
+                this.reactionForce = 0;
+            }
+        }
+
+        // Classe Massa - com g = 10
+        class Mass {
+            constructor(x, mass) {
+                this.position = x;
+                this.mass = mass; // EM KG
+                this.force = mass * GRAVIDADE; // 10 m/s²
+                this.angle = 270; // SEMPRE PARA BAIXO
+            }
+        }
+
+        // Funções de desenho
+        function drawSystem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            calculateBarTilt();
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            drawTiltedBar(centerX, centerY);
+            drawScale(centerX, centerY);
+            
+            // Desenhar forças peso
+            system.forcasPeso.forEach(forca => drawForcaPeso(forca, centerX, centerY));
+            system.supports.forEach(support => drawSupportVisual(support, centerX, centerY));
+            system.masses.forEach(massa => drawMassa(massa, centerX, centerY));
+            
+            updateSystemInfo();
+        }
+
+        function calculateBarTilt() {
+            if (system.supports.length === 0) {
+                barAngle = 0;
+                barPivotPoint = 0.5;
+                return;
+            }
+            
+            barPivotPoint = system.supports[0].position;
+            
+            let totalTorque = 0;
+            
+            // Torque do peso da barra (100N no centro) - BARRA DE 1 METRO
+            const pesoBarra = 100; // 100N FIXO
+            const bracoBarra = (0.5 - barPivotPoint) * COMPRIMENTO_BARRA; // EM METROS
+            totalTorque += pesoBarra * bracoBarra;
+            
+            // Torque das forças peso aplicadas
+            system.forcasPeso.forEach(forca => {
+                const forcaVertical = forca.magnitude;
+                const braco = (forca.position - barPivotPoint) * COMPRIMENTO_BARRA; // EM METROS
+                const momento = forcaVertical * braco;
+                totalTorque += momento;
+            });
+            
+            // Torque das massas (convertidas para força peso)
+            system.masses.forEach(massa => {
+                const forcaPeso = massa.force;
+                const braco = (massa.position - barPivotPoint) * COMPRIMENTO_BARRA; // EM METROS
+                const momento = forcaPeso * braco;
+                totalTorque += momento;
+            });
+            
+            // Ângulo mais realista
+            const maxAngle = 30;
+            const fatorSensibilidade = 2; // Ajustado para 1 metro
+            barAngle = totalTorque * fatorSensibilidade;
+            barAngle = Math.max(-maxAngle, Math.min(maxAngle, barAngle));
+        }
+
+        function drawTiltedBar(centerX, centerY) {
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(barAngle * Math.PI / 180);
+            
+            ctx.fillStyle = system.bar.color;
+            ctx.fillRect(-system.bar.length/2, -system.bar.height/2, system.bar.length, system.bar.height);
+            
+            // Centro de massa
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        function drawScale(centerX, centerY) {
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(barAngle * Math.PI / 180);
+            
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#333';
+            
+            // Escala de 0 a 1 metro (10 divisões de 10cm)
+            for (let i = 0; i <= 10; i++) {
+                const x = -system.bar.length/2 + (i * system.bar.length / 10);
+                ctx.beginPath();
+                ctx.moveTo(x, -15);
+                ctx.lineTo(x, 15);
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.rotate(-barAngle * Math.PI / 180);
+                // Mostrar em metros: 0.0, 0.1, 0.2, ..., 1.0
+                ctx.fillText((i * 0.1).toFixed(1) + 'm', x - 8, 30);
+                ctx.restore();
+            }
+            
+            ctx.restore();
+        }
+
+        function drawForcaPeso(forca, centerX, centerY) {
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(barAngle * Math.PI / 180);
+            
+            const x = -system.bar.length/2 + forca.position * system.bar.length;
+            const forcaY = 0;
+            
+            // Força peso SEMPRE para baixo (270°)
+            const angleRad = (270 - barAngle) * Math.PI / 180;
+            const length = Math.min(80, forca.magnitude * 0.8);
+            
+            const endX = x + length * Math.cos(angleRad);
+            const endY = forcaY - length * Math.sin(angleRad);
+            
+            // Linha da força
+            ctx.strokeStyle = forca.color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, forcaY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // Seta
+            drawArrowhead(ctx, x, forcaY, endX, endY, forca.color);
+            
+            // Ponto de aplicação
+            ctx.fillStyle = forca.color;
+            ctx.beginPath();
+            ctx.arc(x, forcaY, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Texto CORRETO
+            ctx.save();
+            ctx.rotate(-barAngle * Math.PI / 180);
+            ctx.fillStyle = '#000';
+            ctx.font = '14px Arial';
+            ctx.fillText(`${forca.magnitude}N`, centerX + x + 10, centerY + endY - 10);
+            ctx.restore();
+            
+            ctx.restore();
+        }
+
+        function drawArrowhead(ctx, fromX, fromY, toX, toY, color) {
+            const headlen = 12;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - headlen * Math.cos(angle - Math.PI/6),
+                toY - headlen * Math.sin(angle - Math.PI/6)
+            );
+            ctx.lineTo(
+                toX - headlen * Math.cos(angle + Math.PI/6),
+                toY - headlen * Math.sin(angle + Math.PI/6)
+            );
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawSupportVisual(support, centerX, centerY) {
+            ctx.save();
+            
+            const barX = centerX + (-system.bar.length/2 + support.position * system.bar.length) * Math.cos(barAngle * Math.PI / 180);
+            const barY = centerY + (-system.bar.length/2 + support.position * system.bar.length) * Math.sin(barAngle * Math.PI / 180);
+            const barBottom = system.bar.height / 2;
+            
+            if (support.type === 'fixed') {
+                ctx.fillStyle = '#e74c3c';
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(barX - 25, barY + barBottom + 40);
+                ctx.lineTo(barX + 25, barY + barBottom + 40);
+                ctx.lineTo(barX, barY + barBottom + 5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(barX - 15, barY + barBottom + 25);
+                ctx.lineTo(barX + 15, barY + barBottom + 25);
+                ctx.stroke();
+                
+            } else {
+                ctx.fillStyle = '#3498db';
+                ctx.strokeStyle = '#2980b9';
+                ctx.lineWidth = 2;
+                
+                ctx.fillRect(barX - 30, barY + barBottom + 5, 60, 10);
+                
+                ctx.beginPath();
+                ctx.arc(barX, barY + barBottom + 15, 15, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(barX, barY + barBottom + 15, 8, 0, 2 * Math.PI);
+                ctx.stroke();
+                
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI / 2);
+                    ctx.beginPath();
+                    ctx.moveTo(barX + 8 * Math.cos(angle), barY + barBottom + 15 + 8 * Math.sin(angle));
+                    ctx.lineTo(barX - 8 * Math.cos(angle), barY + barBottom + 15 - 8 * Math.sin(angle));
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+            
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.fillText(
+                support.type === 'fixed' ? '🔺 Apoio Fixo' : '🔵 Apoio Móvel', 
+                barX - 35, barY + barBottom + 70
+            );
+        }
+
+        function drawMassa(massa, centerX, centerY) {
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(barAngle * Math.PI / 180);
+            
+            const x = -system.bar.length/2 + massa.position * system.bar.length;
+            const barBottom = system.bar.height / 2;
+            
+            // Bloco da massa
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - 15, barBottom, 30, 40);
+            
+            // Força peso da massa (seta para baixo)
+            const forcaY = barBottom + 40;
+            const endY = forcaY + 40;
+            
+            ctx.strokeStyle = '#FF6B35';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, forcaY);
+            ctx.lineTo(x, endY);
+            ctx.stroke();
+            
+            // Seta para baixo
+            drawArrowhead(ctx, x, forcaY, x, endY, '#FF6B35');
+            
+            ctx.restore();
+            
+            // Texto MOSTRANDO A MASSA REAL com g = 10
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            const textX = centerX + (-system.bar.length/2 + massa.position * system.bar.length) * Math.cos(barAngle * Math.PI / 180);
+            const textY = centerY + system.bar.height + 100;
+            
+            ctx.fillText(`${massa.mass}kg (${massa.force}N)`, textX - 25, textY);
+        }
+
+        // FUNÇÕES DE INTERAÇÃO
+
+        function addForcaPeso() {
+            const magnitude = parseFloat(prompt("Força Peso (N):", "50"));
+            const position = parseFloat(prompt("Posição na barra (0 a 1 metro):", "0.5"));
+            
+            if (!isNaN(magnitude) && !isNaN(position) && position >= 0 && position <= 1) {
+                system.forcasPeso.push(new ForcaPeso(position, magnitude));
+                drawSystem();
+            }
+        }
+
+        function addMassa() {
+            const mass = parseFloat(prompt("Massa (kg):", "5"));
+            const position = parseFloat(prompt("Posição na barra (0 a 1 metro):", "0.5"));
+            
+            if (!isNaN(mass) && !isNaN(position) && position >= 0 && position <= 1) {
+                system.masses.push(new Mass(position, mass));
+                drawSystem();
+            }
+        }
+
+        function addSupport() {
+            const position = parseFloat(prompt("Posição do apoio (0 a 1 metro):", "0.5"));
+            const type = confirm("Clique em OK para apoio fixo, Cancelar para apoio móvel") ? 'fixed' : 'mobile';
+            
+            if (!isNaN(position) && position >= 0 && position <= 1) {
+                system.supports.push(new Support(position, type));
+                drawSystem();
+            }
+        }
+
+        function resetSystem() {
+            system.forcasPeso = [];
+            system.supports = [];
+            system.masses = [];
+            barAngle = 0;
+            barPivotPoint = 0.5;
+            document.getElementById('equilibriumInfo').textContent = '';
+            drawSystem();
+        }
+
+        function rebalanceBar() {
+            if (system.supports.length > 0) {
+                barPivotPoint = system.supports[0].position;
+            }
+            calculateBarTilt();
+            drawSystem();
+        }
+
+        // FUNÇÃO CALCULAR MOMENTOS - BARRA DE 1 METRO
+        function calcularMomentos() {
+            if (system.supports.length === 0) {
+                alert("❌ Adicione pelo menos 1 apoio primeiro!");
+                return;
+            }
+
+            const pivot = system.supports[0].position;
+            
+            let resultado = "📊 CÁLCULO DE MOMENTOS (em N·m):\n\n";
+            resultado += `📏 Barra de ${COMPRIMENTO_BARRA} metro | g = ${GRAVIDADE} m/s²\n\n`;
+            let total = 0;
+
+            // Peso da barra - 100N FIXO no centro
+            const pesoBarra = 100;
+            const bracoBarra = (0.5 - pivot) * COMPRIMENTO_BARRA; // EM METROS
+            const momentoBarra = pesoBarra * bracoBarra;
+            resultado += `📏 Peso da Barra (100N): ${momentoBarra.toFixed(2)} N·m\n`;
+            resultado += `   (100N × ${bracoBarra.toFixed(2)}m)\n`;
+            total += momentoBarra;
+
+            // Forças peso
+            system.forcasPeso.forEach((forca, i) => {
+                const braco = (forca.position - pivot) * COMPRIMENTO_BARRA; // EM METROS
+                const momento = forca.magnitude * braco;
+                resultado += `⚡ Força ${i+1} (${forca.magnitude}N): ${momento.toFixed(2)} N·m\n`;
+                resultado += `   (${forca.magnitude}N × ${braco.toFixed(2)}m)\n`;
+                total += momento;
+            });
+
+            // Massas (convertidas para força peso com g = 10)
+            system.masses.forEach((massa, i) => {
+                const braco = (massa.position - pivot) * COMPRIMENTO_BARRA; // EM METROS
+                const momento = massa.force * braco;
+                resultado += `⚖️ Massa ${i+1} (${massa.mass}kg): ${momento.toFixed(2)} N·m\n`;
+                resultado += `   (P = m·g = ${massa.mass}kg × ${GRAVIDADE}m/s² = ${massa.force}N)\n`;
+                resultado += `   (${massa.force}N × ${braco.toFixed(2)}m)\n`;
+                total += momento;
+            });
+
+            resultado += `\n📈 MOMENTO RESULTANTE: ${total.toFixed(2)} N·m\n`;
+            
+            if (Math.abs(total) < 0.1) {
+                resultado += "✅ SISTEMA EM EQUILÍBRIO! (ΣM ≈ 0)";
+            } else if (total > 0) {
+                resultado += "🔄 MOMENTO ANTI-HORÁRIO (desequilíbrio)";
+            } else {
+                resultado += "🔄 MOMENTO HORÁRIO (desequilíbrio)";
+            }
+
+            resultado += `\n\n📍 Ponto de referência: apoio em ${pivot.toFixed(2)}m`;
+            resultado += `\n📏 Comprimento da barra: ${COMPRIMENTO_BARRA} metro`;
+
+            // Mostrar em alerta e na tela
+            alert(resultado);
+            document.getElementById('equilibriumInfo').innerHTML = 
+                resultado.replace(/\n/g, '<br>');
+        }
+
+        function updateSystemInfo() {
+            const info = document.getElementById('systemInfo');
+            const equilibriumInfo = document.getElementById('equilibriumInfo');
+            
+            let statusHTML = '';
+            let equilibriumHTML = '';
+            
+            if (system.supports.length >= 1 && (system.forcasPeso.length + system.masses.length > 0)) {
+                const statusIndicator = Math.abs(barAngle) < 1 ? 'status-equilibrium' : 'status-disequilibrium';
+                const statusText = Math.abs(barAngle) < 1 ? 'EQUILIBRADO' : 'EM DESEQUILÍBRIO';
+                
+                statusHTML = `
+                    <span class="status-indicator ${statusIndicator}"></span>
+                    <strong>Sistema ${statusText}</strong><br>
+                    <small>Forças Peso: ${system.forcasPeso.length} | Apoios: ${system.supports.length} | Massas: ${system.masses.length}</small><br>
+                    <small>Peso da Barra: 100N | Barra: ${COMPRIMENTO_BARRA}m | Inclinação: ${barAngle.toFixed(1)}°</small>
+                `;
+                
+                equilibriumHTML = `Clique em "Calcular Momentos" para análise`;
+            } else {
+                statusHTML = `
+                    <span class="status-indicator status-disequilibrium"></span>
+                    Sistema aguardando configuração...<br>
+                    <small>Adicione 1 apoio e forças/massas para começar</small>
+                `;
+                equilibriumHTML = `Use os botões acima para construir seu sistema`;
+            }
+            
+            info.innerHTML = statusHTML;
+            equilibriumInfo.innerHTML = equilibriumHTML;
+        }
+
+        // Inicializar
+        drawSystem();
+    </script>
+</body>
+</html>
